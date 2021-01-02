@@ -1,6 +1,6 @@
 <?php
   session_start();
-  require '../../dbconfig/config.php';
+  
   if($_SESSION['login_s'] != '4'){
     header('location:../../login.php');
   }
@@ -62,18 +62,20 @@
 <body>
 
 <nav>
+  <div class="logo">Web-COMS</div>
       <input type="checkbox" id="click">
             <label for="click" class="menu-btn">
               <i class="fas fa-bars"></i>
             </label>
     <ul>
-	  <li><a href="conferencechairhomepage.php">Home</a></li>
+	  <li><a class="active" href="conferencechairhomepage.php">Home</a></li>
       <li><a href="create_conference.php">Request a Conference</a></li>
-
+      <!--<li><a href="viewConferencesForCC.php">View Conf</a></li>-->
       <li><a href="addnotemplates.php">Add notification templates</a></li>
       <li><a href="upudetauls.php">Upload User Details</a></li>
-	  <li><a href="registerUsers.php">Register Users</a></li>
-	  <li><a class="active" href="updateprofile.php">Update Profie</a></li>
+	    <li><a href="registerUsers.php">User Registration</a></li>
+	    <li><a href="updateprofile.php">Update Profie</a></li>
+      <!--<li><a href="con_change_password.php">Change Password</a></li>-->
       <li style="float:right; margin-right:40px"><a href="../logout.php">Log Out</a></li>
 
     </ul>
@@ -101,8 +103,8 @@
       <label for="fname">Full Name:</label><br>
 			<input id="fname" name="fullname" type="text" class="inputvalues" placeholder="Type your Full Name" required/><br>
 			
-	 <label for="email">Email:</label><br>
-			<input id="email" name="email" type="text" class="inputvalues" placeholder="Type your current Email" required/><br>
+	 <!--<label for="email">Email:</label><br>
+			<input id="email" name="email" type="text" class="inputvalues" placeholder="Type your current Email" required/><br>-->
 			
 
 
@@ -129,17 +131,36 @@
 		<?php
 			if(isset($_POST['submit_btn']))
 			{
-				
+        require '../../dbconfig/config.php';
+          $email=$_SESSION['c_email'];
+          $aTitle = $_POST['acTitle'];
+          $fullname =$_POST['fullname'];
+				  $Organization = $_POST['Organization'];
+				  $ContactDetails = $_POST['ContactDetails'];
+          
+          $query="SELECT * from userinfotable WHERE email=? AND user_type=?;";
+              
+          $user_type='Conference_chair';
+         $stmt=mysqli_stmt_init($con);
 
-                $email= $_POST['email'];
-				$aTitle = $_POST['acTitle'];
-                $fullname =$_POST['fullname'];
-				$Organization = $_POST['Organization'];
-				$ContactDetails = $_POST['ContactDetails'];
-				
+         if(!mysqli_stmt_prepare($stmt,$query)){
+                                   
+          echo "There was an error2";
+          exit();
+        }else{
+          mysqli_stmt_bind_param($stmt,"ss",$email,$user_type);
+          mysqli_stmt_execute($stmt);
+          $result=mysqli_stmt_get_result($stmt);
+
+          if(!$row=mysqli_fetch_assoc($result) ){
+                         
+              echo "There was a error3!";
+              exit();
+          }else{
+
                 $query = "UPDATE userinfotable SET full_name = '$fullname',
                 organization = '$Organization', contactdetails = '$ContactDetails'
-                WHERE email = '$email'";
+                WHERE email = '$email' AND user_type='$user_type'";
                 $query_run = mysqli_query($con,$query);
 				
 				if($query_run)
@@ -149,8 +170,9 @@
                   </script>';
                 }
 			
-					
-            }
+          }
+        } 
+      }
         ?>
 	</div>
 
